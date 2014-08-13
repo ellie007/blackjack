@@ -2,15 +2,47 @@ class Blackjack
 
   attr_reader :cards
 
-  def initialize
+  def initialize(io, strings)
+    @io = io
+    @strings = strings
+
     @cards = []
+    @players_cards = []
+    @dealer_cards = []
+
+    create_cards
+end
+
+  def begin_game
+    deal_initial_cards
+    deal_for_player
+#    deal_for_dealer
   end
 
-  def create_cards
-    @suits = ['of Clubs', 'of Hearts', 'of Spades', 'of Diamonds']
-    create_number_cards
-    create_face_cards
-    @cards
+  def deal_for_player
+    @io.output(@strings.bust_message) && return if add_card_values(@players_cards) >= 21
+
+    @io.output(@strings.player_turn_message)
+    input = @io.input.to_i
+    if input == 1
+      deal_for_player
+    else
+    end
+  end
+
+  def add_card_values(cards)
+    value = 0
+    cards.each do |card|
+      value += card.last
+    end
+    value
+  end
+
+  def deal_initial_cards
+    initial_cards = @cards.sample(4)
+    @players_cards = initial_cards[0], initial_cards[1]
+    @dealers_cards = initial_cards[2], initial_cards[3]
+    remove_from_deck(initial_cards)
   end
 
   def shuffle_deck
@@ -30,10 +62,17 @@ class Blackjack
 
 private
 
+  def create_cards
+    @suits = ['of Clubs', 'of Hearts', 'of Spades', 'of Diamonds']
+    create_number_cards
+    create_face_cards
+    @cards
+  end
+
   def create_number_cards
     @suits.each do |suit|
-      (2..10).each do |card|
-        @cards << card.to_s + ' ' + suit
+      (2..10).each do |num|
+        @cards << [num.to_s + ' ' + suit, num]
       end
     end
   end
@@ -42,9 +81,17 @@ private
     numbers = ['Ace', 'Jack', 'Queen', 'King']
     @suits.each do |suit|
       numbers.each do |num|
-        @cards << num + ' ' + suit
+        if num == 'Ace'
+          @cards << [num + ' ' + suit, 1, 11]
+        else
+          @cards << [num + ' ' + suit, 10]
+        end
       end
     end
+  end
+
+  def remove_from_deck(cards)
+   cards.each { |card| @cards.delete(card) }
   end
 
 end
